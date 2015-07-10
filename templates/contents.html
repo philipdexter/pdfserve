@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PDF Serve</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+  <body>
+
+    <ul>
+    {% for item in contents %}
+    <li><a href="/{{ item.href }}">{{ item.name }}</a></li>
+    {% endfor %}
+    </ul>
+
+  </body>
+</html>
