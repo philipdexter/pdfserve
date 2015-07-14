@@ -7,5 +7,5 @@ listing all pdfs available.
 
 ## To Use
 
-Create the folder `pdfs` and fill it with pdf files.
-Everything should work from there.
+Add your `.pdf` files to the `pdf` folder and run with
+`python serve.py`
