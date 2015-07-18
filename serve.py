@@ -6,26 +6,33 @@ from glob import glob
 
 app = Flask(__name__)
 
+def build_path(which, mod=None, page=None):
+    return 'pdfs/{}{}{}'.format(which,
+                                '.{}'.format(mod) if mod is not None else '',
+                                '/{}.pdf'.format(page) if page is not None else '')
+
 def get_saved_page(which):
     """Retrieve the last visited page of a pdf"""
-    if not isfile('pdfs/{}.saved'.format(which)):
+    saved_path = build_path(which, 'saved')
+    if not isfile(saved_path):
         set_saved_page(which, 0)
         return 0
-    with open('pdfs/{}.saved'.format(which), 'r') as f:
+    with open(saved_path, 'r') as f:
         return int(f.read())
 
 def set_saved_page(which, page):
     """Set the last visited page of a pdf"""
-    if not isfile('pdfs/{}.saved'.format(which)):
-        open('pdfs/{}.saved'.format(which), 'a').close()
-    with open('pdfs/{}.saved'.format(which), 'w') as f:
+    saved_path = build_path(which, 'saved')
+    if not isfile(saved_path):
+        open(saved_path, 'a').close()
+    with open(saved_path, 'w') as f:
         f.write(str(page))
 
 
 @app.route('/pdf/<which>/<page>')
 def serve_pdf(which, page):
     """Serve a page of a pdf file"""
-    return send_file('pdfs/{}.pages/{}.pdf'.format(which, page))
+    return send_file(build_path(which, 'pages', page))
 
 @app.route('/<which>')
 @app.route('/<which>/<page>')
@@ -34,17 +41,20 @@ def pdf(which, page=None):
     if page is None:
         page = get_saved_page(which)
     page = int(page)
+    pdf_path = build_path(which)
+    page_directory = build_path(which, 'pages')
+    page_path = build_path(which, 'pages', page)
     if page < 0:
         return redirect('{}/{}'.format(which, 0))
-    if not isfile('pdfs/{}.pages/{}.pdf'.format(which, page)):
-        makedirs('pdfs/{}.pages'.format(which), exist_ok=True)
+    if not isfile(page_path):
+        makedirs(page_directory, exist_ok=True)
         pdfout = PdfFileWriter()
-        with open('pdfs/{}'.format(which), 'rb') as fin:
+        with open(pdf_path, 'rb') as fin:
             pdfin = PdfFileReader(fin)
             if pdfin.isEncrypted:
                 pdfin.decrypt('')
             pdfout.addPage(pdfin.getPage(page))
-            with open('pdfs/{}.pages/{}.pdf'.format(which, page), 'wb') as fout:
+            with open(page_path, 'wb') as fout:
                 pdfout.write(fout)
     set_saved_page(which, page)
     return render_template('index.html', which=which, page=page)
