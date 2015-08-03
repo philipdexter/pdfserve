@@ -40,6 +40,8 @@ def pdf(which, page=None):
     """Create a page of a pdf and display it"""
     if page is None:
         page = get_saved_page(which)
+    if page == 'all':
+        return send_file(build_path(which))
     page = int(page)
     pdf_path = build_path(which)
     page_directory = build_path(which, 'pages')
